@@ -1,76 +1,126 @@
-# Stock Market Prediction using LSTM
+Stock Market Prediction using LSTM
 
-This project implements a Long Short-Term Memory (LSTM) neural network to predict stock closing prices using historical data.
+This project implements a Long Short-Term Memory (LSTM) neural network to predict stock closing prices using historical time-series data.
+The objective is to study how deep learning models capture temporal patterns and trends in financial markets.
 
-The goal is to study how deep learning models can capture trends in financial time-series data.
+Dataset
 
----
+Source: National Stock Exchange of India (NSE)
 
-## Dataset
-- Source: Yahoo Finance
-- Stock: Reliance Industries Limited (NSE)
-- Time period: 2016 – 2026
-- Frequency: Daily
+Stock: Reliance Industries Limited
 
-The dataset contains historical closing prices and is used for supervised time-series prediction.
+Time Period: 2016 – 2026
 
----
+Frequency: Daily
 
-## Exploratory Data Analysis (EDA)
+The dataset consists of historical daily closing prices collected from the NSE website and is used for supervised time-series forecasting.
 
-Exploratory analysis was initially performed to understand:
-- price trends
-- volatility patterns
-- rolling statistics
-- return distributions
+Exploratory Data Analysis (EDA)
 
-EDA was used to guide feature selection and was removed from the final training script to keep the codebase clean and focused.
+Exploratory Data Analysis was conducted to understand the statistical and temporal characteristics of the stock price data, including:
 
----
+Long-term and short-term price trends
 
-## Feature Engineering
+Volatility patterns
+
+Rolling statistics
+
+Return distributions
+
+EDA was used to guide feature selection and modeling decisions.
+To keep the training pipeline clean and focused, EDA code was excluded from the final training script.
+
+Feature Engineering
 
 The following features were derived from the closing price:
 
-- Daily Return
-- 10-day Moving Average
-- 10-day Volatility
-- Closing Price
+Daily Return
 
-These features help the model learn both short-term and long-term market behavior.
+10-day Moving Average
 
----
+10-day Volatility
 
-## Model Architecture
+Closing Price
 
-- Model: LSTM Neural Network
-- Layers: 2 LSTM layers with Dropout
-- Look-back window: 90 days
-- Optimizer: Adam
-- Loss function: Mean Squared Error (MSE)
+These features enable the model to learn both trend-following behavior and short-term market fluctuations.
 
-The model predicts the next-day closing price based on past sequences.
+Model Architecture
 
----
+Model Type: Long Short-Term Memory (LSTM) Neural Network
 
-## Model Evaluation
+Architecture:
 
-The model was evaluated on a held-out test set.
+1 LSTM layer
 
-- Mean Absolute Error (MAE): ~₹53
-- Root Mean Squared Error (RMSE): ~₹113
+Dropout for regularization
 
-The results indicate good trend prediction ability, with higher errors during volatile periods.
+Fully connected output layer
 
----
+Look-back Window: 90 days
 
-## Results Visualization
+Optimizer: Adam
 
-Predicted prices were compared with actual prices, and the graph is saved to the `output/` directory.
+Loss Function: Mean Squared Error (MSE)
 
----
+The model predicts the next-day closing price using a fixed-length historical input sequence.
 
-## How to Run
+Model Evaluation
 
-```bash
+The model was evaluated on a chronologically held-out test set, ensuring no future data leakage.
+
+Mean Absolute Error (MAE): ~₹33
+
+Root Mean Squared Error (RMSE): ~₹89
+
+The model demonstrates reasonable trend-following capability, with higher prediction errors observed during periods of elevated market volatility
+
+Evaluation metrics are reported in absolute price units (INR).
+Results Visualization
+
+Predicted prices were compared against actual prices to evaluate performance visually.
+The comparison plot is saved in the output/ directory.
+
+Application & Deployment
+
+The trained model is exposed through a FastAPI backend, enabling real-time inference.
+A Streamlit frontend provides interactive visualization, including:
+
+Historical price trends
+
+Model input window (last 90 prices)
+
+Next-day price prediction
+
+Comparison between recent prices and the predicted value
+
+This separation of concerns follows a clean ML system design pattern.
+
+How to Run
+
+Install dependencies
+
+pip install -r requirements.txt
+
+
+Train the model
+
+python training/train.py
+
+
+Start the API
+
+uvicorn api.main:app --reload
+
+
+Launch the frontend
+
+streamlit run frontend/app.py
+
+Notes
+
+The model is trained on a single stock to demonstrate time-series forecasting and deployment concepts.
+
+The architecture is extensible to additional stocks with retraining.
+
+This project is intended for academic and learning purposes, not financial advice.
 
