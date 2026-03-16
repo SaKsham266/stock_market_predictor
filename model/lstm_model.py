@@ -1,5 +1,5 @@
-import numpy as np
-import tensorflow as tf
+import numpy as np # type: ignore
+import tensorflow as tf # type: ignore
 
 from  tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Input  # type: ignore
