@@ -1,20 +1,22 @@
-import numpy as np # type: ignore
-import tensorflow as tf # type: ignore
-
-from  tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Input  # type: ignore
-
+import numpy as np
+import tensorflow as tf
 
 
 def build_lstm_model(time_steps, num_features):
-    model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(time_steps, num_features)),
-        Dropout(0.2),
-        LSTM(64),
-        Dense(1)
+
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(time_steps, num_features)),
+
+        tf.keras.layers.LSTM(64, return_sequences=True),
+        tf.keras.layers.Dropout(0.2),
+
+        tf.keras.layers.LSTM(64),
+        tf.keras.layers.Dense(1)
     ])
+
     model.compile(
         optimizer="adam",
         loss="mse"
     )
+
     return model
