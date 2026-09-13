@@ -4,6 +4,12 @@ import streamlit as st
 import pandas as pd
 import requests
 import matplotlib.pyplot as plt
+import sys
+import os
+
+# Allow importing data.data_loader when run via `streamlit run frontend/app.py`
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from data.data_loader import adjust_for_splits
 
 API_URL = "http://127.0.0.1:8000/predict"
 TIME_STEP = 90
@@ -15,6 +21,11 @@ df = pd.read_csv("data/RELIANCE.csv")
 df.columns = df.columns.str.strip().str.lower()
 df["datetime"] = pd.to_datetime(df["datetime"])
 df = df.sort_values("datetime")
+
+# Fix unadjusted stock splits (e.g. RELIANCE's 2017 and 2024 bonus issues)
+# so the chart and the prices sent to the API don't contain a fake ~-50%
+# single-day move. Must match the same adjustment applied in train.py.
+df = adjust_for_splits(df, close_col="close")
 
 st.subheader("Raw Closing Prices")
 st.subheader("Closing Price Over Time")
