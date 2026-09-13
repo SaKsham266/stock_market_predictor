@@ -1,4 +1,5 @@
 # frontend/app.py
+
 import streamlit as st
 import pandas as pd
 import requests
@@ -7,22 +8,20 @@ import matplotlib.pyplot as plt
 API_URL = "http://127.0.0.1:8000/predict"
 TIME_STEP = 90
 
-st.title(" Stock Price Predictor ")
+st.title("📈 Stock Price Predictor")
 
 # Load data
 df = pd.read_csv("data/RELIANCE.csv")
 df.columns = df.columns.str.strip().str.lower()
 df["datetime"] = pd.to_datetime(df["datetime"])
-
-
 df = df.sort_values("datetime")
+
 st.subheader("Raw Closing Prices")
 st.subheader("Closing Price Over Time")
 
 st.line_chart(
     df.set_index("datetime")["close"]
 )
-
 
 # Take last 90 prices
 last_90 = df["close"].tail(TIME_STEP).tolist()
@@ -46,31 +45,36 @@ if st.button("Predict Next Price"):
             recent_df = df.tail(120).copy()
             recent_df["datetime"] = pd.to_datetime(recent_df["datetime"])
 
-            # Plot actual prices with dates
-            plt.figure(figsize=(10, 4))
-            plt.plot(
+            # Create figure
+            fig, ax = plt.subplots(figsize=(10, 4))
+
+            # Plot actual prices
+            ax.plot(
                 recent_df["datetime"],
                 recent_df["close"],
                 label="Actual Price",
                 color="blue"
             )
 
-            # Predicted price line
-            plt.axhline(
+            # Plot predicted price
+            ax.axhline(
                 y=prediction,
                 color="red",
                 linestyle="--",
                 label="Predicted Next Price"
             )
 
-            plt.xlabel("Date")
-            plt.ylabel("Price")
-            plt.title("Actual Prices vs Predicted Next Price")
-            plt.legend()
-            plt.xticks(rotation=45)
-            plt.tight_layout()
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Price")
+            ax.set_title("Actual Prices vs Predicted Next Price")
+            ax.legend()
 
-            st.pyplot(plt)
+            fig.autofmt_xdate()
+            fig.tight_layout()
+
+            st.pyplot(fig)
+
+            plt.close(fig)
 
         else:
             st.error(

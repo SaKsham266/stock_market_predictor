@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException
 import numpy as np
 import joblib
-from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.models import load_model  # type: ignore
 
 from api.schemas import PredictionRequest, PredictionResponse
 

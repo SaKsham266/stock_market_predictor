@@ -1,6 +1,6 @@
-from model.lstm_model import build_lstm_model, create_sequences # type: ignore
+from model.lstm_model import build_lstm_model, create_sequences  
 
-from tensorflow.keras.callbacks import EarlyStopping # type: ignore
+from tensorflow.keras.callbacks import EarlyStopping  # type: ignore
 import joblib
 
 from data.data_loader import load_stock_data
@@ -22,20 +22,37 @@ data["MA_10"] = data["Close"].rolling(window=10).mean()
 data["Volatility_10"] = data["Close"].rolling(window=10).std()
 data = data.dropna()
 
-features = [ 'Close']
+features = ['Close', 'Return', 'MA_10', 'Volatility_10']
 
 target = "Close"
-#print("After download:", data.shape)
-#print("NaNs per column:\n", data.isna().sum())
+print("After download:", data.shape)
+print("NaNs per column:\n", data.isna().sum())
 
 X = data[features].values
 y = data[[target]].values
 
+train_size = int(len(X) * 0.8)
+
+X_train_raw = X[:train_size]
+X_test_raw = X[train_size:]
+
+y_train_raw = y[:train_size]
+y_test_raw = y[train_size:]
+
 X_scaler = MinMaxScaler(feature_range=(0, 1))
 y_scaler = MinMaxScaler(feature_range=(0, 1))
 
-X_scaled = X_scaler.fit_transform(X)
-y_scaled = y_scaler.fit_transform(y)
+X_scaler.fit(X_train_raw)
+y_scaler.fit(y_train_raw)
+
+X_train_scaled = X_scaler.transform(X_train_raw)
+X_test_scaled = X_scaler.transform(X_test_raw)
+
+y_train_scaled = y_scaler.transform(y_train_raw)
+y_test_scaled = y_scaler.transform(y_test_raw)
+
+X_scaled = np.concatenate((X_train_scaled, X_test_scaled), axis=0)
+y_scaled = np.concatenate((y_train_scaled, y_test_scaled), axis=0)
 #print(type(X_scaled), X_scaled.shape)
 #print(type(y_scaled), y_scaled.shape)
 
@@ -44,14 +61,16 @@ X_seq, y_seq = create_sequences(X_scaled, y_scaled, time_step=TIME_STEP)
 #print(X_seq.shape)
 #print(y_seq.shape)
 
+seq_train_size = int(len(X_seq) * 0.7)
+seq_val_size = int(len(X_seq) * 0.15)
 
-train_size = int(len(X_seq) * 0.8)
+X_train = X_seq[:seq_train_size]
+X_val = X_seq[seq_train_size:seq_train_size + seq_val_size]
+X_test = X_seq[seq_train_size + seq_val_size:]
 
-X_train = X_seq[:train_size]
-X_test  = X_seq[train_size:]
-
-y_train = y_seq[:train_size]
-y_test  = y_seq[train_size:]
+y_train = y_seq[:seq_train_size]
+y_val = y_seq[seq_train_size:seq_train_size + seq_val_size]
+y_test = y_seq[seq_train_size + seq_val_size:]
 #print(X_train.shape, y_train.shape)
 #print(X_test.shape, y_test.shape)
 
@@ -68,7 +87,7 @@ history = model.fit(
     y_train,
     epochs=50,
     batch_size=32,
-    validation_data=(X_test, y_test),
+    validation_data=(X_val, y_val),
     callbacks=[early_stop],
     verbose=1
 )
@@ -85,6 +104,12 @@ mae = mean_absolute_error(y_test_actual, y_pred_actual)
 
 print("RMSE:", rmse)
 print("MAE:", mae)
+naive_pred = y_test_actual[:-1]
+naive_actual = y_test_actual[1:]
+naive_mae = mean_absolute_error(naive_actual, naive_pred)
+naive_rmse = np.sqrt(mean_squared_error(naive_actual, naive_pred))
+print("Naive MAE:", naive_mae)
+print("Naive RMSE:", naive_rmse)
 
 plt.figure(figsize=(12, 5))
 
