@@ -84,4 +84,7 @@ def predict(data: PredictionRequest):
     # price[t] = close[t-1] * (1 + return[t])
     predicted_price = last_close * (1 + predicted_return)
 
-    return PredictionResponse(prediction=predicted_price)
+    return PredictionResponse(
+        prediction=predicted_price,
+        predicted_return=predicted_return,
+    )

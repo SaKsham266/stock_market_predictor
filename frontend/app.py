@@ -34,23 +34,35 @@ st.line_chart(
     df.set_index("datetime")["close"]
 )
 
-# Take last 90 prices
-last_90 = df["close"].tail(TIME_STEP).tolist()
+# Take last 90 prices + 10 extra days of history so the API can compute
+# the 10-day rolling features (MA_10 / Volatility_10) without NaNs in the
+# final 90-step window it feeds to the model.
+last_100 = df["close"].tail(TIME_STEP + 10).tolist()
 
 st.subheader("Last 90 Closing Prices")
-st.write(last_90)
+st.write(last_100[-TIME_STEP:])
 
 # Call API
 if st.button("Predict Next Price"):
-    payload = {"prices": last_90}
+    payload = {"prices": last_100}
 
     try:
         response = requests.post(API_URL, json=payload)
 
         if response.status_code == 200:
-            prediction = response.json()["prediction"]
+            result = response.json()
+            prediction = result["prediction"]
+            predicted_return = result["predicted_return"]
 
-            st.success(f"📈 Predicted Next Price: ₹{prediction:.2f}")
+            return_pct = predicted_return * 100
+            direction = "🔺" if predicted_return >= 0 else "🔻"
+
+            col1, col2 = st.columns(2)
+            col1.metric("Predicted Next Price", f"₹{prediction:.2f}")
+            col2.metric(
+                "Predicted Return",
+                f"{direction} {return_pct:+.2f}%",
+            )
 
             # Prepare recent data
             recent_df = df.tail(120).copy()
